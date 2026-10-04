@@ -13,16 +13,24 @@ import com.sportmeet.app.data.remote.dto.SearchTournamentsResponse
 import com.sportmeet.app.data.remote.dto.TournamentResponse
 import com.sportmeet.app.data.remote.dto.UpdateRegistrationStatusRequest
 import com.sportmeet.app.data.remote.dto.UpdateStatusRequest
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface SportMeetApi {
+
+    // File Upload
+    @Multipart
+    @POST("api/upload")
+    suspend fun uploadImage(@Part file: MultipartBody.Part): Response<Map<String, String>>
 
     // Authentication
     @POST("api/auth/register")

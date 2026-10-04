@@ -1,7 +1,13 @@
 package com.sportmeet.app.presentation.organizer
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,10 +31,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.CheckCircleOutline
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.HourglassEmpty
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.PostAdd
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Surface
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -461,6 +472,31 @@ fun OrganizerHomeScreen(
         var contactPhone by remember { mutableStateOf("+91 98765 43210") }
         var sportDropdownExpanded by remember { mutableStateOf(false) }
 
+        // Poster image state
+        var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+        var uploadedPosterUrl by remember { mutableStateOf<String?>(null) }
+        var isUploadingImage by remember { mutableStateOf(false) }
+
+        val imagePickerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            uri?.let {
+                selectedImageUri = it
+                isUploadingImage = true
+                coroutineScope.launch {
+                    val uploadResult = tournamentRepo.uploadPoster(context, it)
+                    uploadResult.onSuccess { url ->
+                        uploadedPosterUrl = url
+                        isUploadingImage = false
+                        Toast.makeText(context, "Tournament poster attached!", Toast.LENGTH_SHORT).show()
+                    }.onFailure { err ->
+                        isUploadingImage = false
+                        Toast.makeText(context, "Upload note: Local preview ready (${err.message})", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
         AlertDialog(
             onDismissRequest = { showCreateTournamentDialog = false },
             title = {
@@ -518,6 +554,153 @@ fun OrganizerHomeScreen(
                                         selectedSport = sport
                                         sportDropdownExpanded = false
                                     }
+                                )
+                            }
+                        }
+                    }
+
+                    // Tournament Poster Upload Section
+                    Text(
+                        text = "TOURNAMENT POSTER / BANNER",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    if (selectedImageUri != null || !uploadedPosterUrl.isNullOrBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(150.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(1.dp, SportBlue.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                        ) {
+                            com.sportmeet.app.core.common.TournamentPosterImage(
+                                posterUri = selectedImageUri,
+                                posterUrl = uploadedPosterUrl,
+                                sportEmoji = selectedSport.iconEmoji,
+                                modifier = Modifier.fillMaxSize()
+                            )
+
+                            // Actions overlay: Change / Remove
+                            Row(
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color.Black.copy(alpha = 0.7f),
+                                    modifier = Modifier.clickable {
+                                        imagePickerLauncher.launch("image/*")
+                                    }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.PhotoCamera,
+                                            contentDescription = "Change",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(text = "Change", color = Color.White, fontSize = 11.sp)
+                                    }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = SportRed.copy(alpha = 0.85f),
+                                    modifier = Modifier.clickable {
+                                        selectedImageUri = null
+                                        uploadedPosterUrl = null
+                                    }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Delete,
+                                            contentDescription = "Remove",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(text = "Remove", color = Color.White, fontSize = 11.sp)
+                                    }
+                                }
+                            }
+
+                            if (isUploadingImage) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.Black.copy(alpha = 0.5f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                        Text(
+                                            text = "Uploading image...",
+                                            color = Color.White,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { imagePickerLauncher.launch("image/*") },
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp, horizontal = 12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(SportBlue.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.CloudUpload,
+                                        contentDescription = "Upload Poster",
+                                        tint = SportBlue,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "📸 Upload Tournament Poster / Banner",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = SportBlue
+                                )
+                                Text(
+                                    text = "Tap to choose photo from gallery (JPEG, PNG)",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -598,7 +781,8 @@ fun OrganizerHomeScreen(
                                         prizeMoney = prizeText.toDoubleOrNull() ?: 0.0,
                                         contactNumber = contactPhone,
                                         whatsappNumber = contactPhone,
-                                        description = "Grassroots tournament hosted in $locationCity at $venueName."
+                                        description = "Grassroots tournament hosted in $locationCity at $venueName.",
+                                        posterUrl = uploadedPosterUrl
                                     )
                                 )
                                 refreshOrganizerData()

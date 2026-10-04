@@ -69,10 +69,23 @@ fun TournamentCard(
         )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
+            if (!tournament.posterUrl.isNullOrBlank()) {
+                TournamentPosterImage(
+                    posterUrl = tournament.posterUrl,
+                    sportEmoji = tournament.sport.iconEmoji,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(130.dp)
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
             // Header: Sport emoji badge + Status badge + Favorite
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -281,4 +294,5 @@ fun TournamentCard(
             }
         }
     }
+}
 }

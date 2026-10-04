@@ -82,7 +82,7 @@ data class Tournament(
     @Column(columnDefinition = "TEXT")
     var description: String = "",
 
-    @Column(name = "poster_url", length = 255)
+    @Column(name = "poster_url", length = 1000)
     var posterUrl: String? = null,
 
     @Column(nullable = false, length = 30)

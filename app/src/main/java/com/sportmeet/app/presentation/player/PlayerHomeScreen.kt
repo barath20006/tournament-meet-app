@@ -498,6 +498,18 @@ fun PlayerHomeScreen(
                     .padding(horizontal = 20.dp, vertical = 10.dp)
                     .verticalScroll(rememberScrollState())
             ) {
+                if (!tournament.posterUrl.isNullOrBlank()) {
+                    com.sportmeet.app.core.common.TournamentPosterImage(
+                        posterUrl = tournament.posterUrl,
+                        sportEmoji = tournament.sport.iconEmoji,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(170.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                }
+
                 // Header: Emoji & Name
                 Row(
                     modifier = Modifier.fillMaxWidth(),

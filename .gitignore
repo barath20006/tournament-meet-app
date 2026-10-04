@@ -13,3 +13,4 @@ captures
 *.aab
 *.zip
 .kotlin
+backend/uploads/

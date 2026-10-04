@@ -1,6 +1,7 @@
 package com.sportmeet.app.data.repository
 
 import android.content.Context
+import android.net.Uri
 import com.sportmeet.app.data.mapper.TournamentMapper
 import com.sportmeet.app.data.remote.api.ApiClient
 import com.sportmeet.app.data.remote.dto.CreateTournamentRequest
@@ -12,6 +13,9 @@ import com.sportmeet.app.domain.model.Tournament
 import com.sportmeet.app.domain.model.TournamentStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class TournamentRepository(context: Context) {
     private val api = ApiClient.getApi(context)
@@ -87,6 +91,26 @@ class TournamentRepository(context: Context) {
         }
     }
 
+    suspend fun uploadPoster(context: Context, imageUri: Uri): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val bytes = context.contentResolver.openInputStream(imageUri)?.use { it.readBytes() }
+                ?: return@withContext Result.failure(Exception("Cannot read image from device"))
+
+            val requestBody = bytes.toRequestBody("image/*".toMediaTypeOrNull())
+            val part = MultipartBody.Part.createFormData("file", "tournament_poster_${System.currentTimeMillis()}.jpg", requestBody)
+
+            val response = api.uploadImage(part)
+            if (response.isSuccessful && response.body() != null) {
+                val url = response.body()!!["url"] ?: ""
+                Result.success(url)
+            } else {
+                Result.failure(Exception("Failed to upload image (${response.code()})"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun createTournament(request: CreateTournamentRequest): Result<Tournament> = withContext(Dispatchers.IO) {
         try {
             val response = api.createTournament(request)
@@ -131,6 +155,7 @@ class TournamentRepository(context: Context) {
             contactNumber = request.contactNumber,
             whatsappNumber = request.whatsappNumber,
             description = request.description,
+            posterUrl = request.posterUrl,
             status = TournamentStatus.PENDING_APPROVAL,
             latitude = request.latitude,
             longitude = request.longitude
