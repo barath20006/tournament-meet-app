@@ -62,6 +62,8 @@ data class CreateTournamentRequest(
     @field:NotBlank(message = "Venue name is required")
     val venueName: String,
 
+    val groundName: String = "",
+
     val address: String = "",
 
     @field:NotBlank(message = "Tournament date is required")
@@ -97,6 +99,7 @@ data class TournamentResponse(
     val tournamentType: String,
     val location: String,
     val venueName: String,
+    val groundName: String = "",
     val address: String,
     val date: String,
     val startTime: String,

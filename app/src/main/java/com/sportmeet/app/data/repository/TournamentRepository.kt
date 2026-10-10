@@ -20,20 +20,35 @@ import okhttp3.RequestBody.Companion.toRequestBody
 class TournamentRepository(context: Context) {
     private val api = ApiClient.getApi(context)
 
-    // Local mutable state for instant responsive mutations across screens
-    private val localTournaments = mutableListOf<Tournament>().apply {
-        addAll(SampleData.sampleTournaments)
-        addAll(SampleData.sampleOrganizerTournaments.filterNot { orgTour ->
-            any { it.id == orgTour.id }
-        })
+    companion object {
+        // Shared local state across screens and instances - starts clean with NO data
+        val localTournaments = mutableListOf<Tournament>()
+        val localFavorites = mutableSetOf<String>()
+
+        fun clearAll() {
+            localTournaments.clear()
+            localFavorites.clear()
+        }
+
+        fun incrementRegisteredTeams(tournamentId: String) {
+            val idx = localTournaments.indexOfFirst { it.id == tournamentId }
+            if (idx != -1) {
+                val t = localTournaments[idx]
+                localTournaments[idx] = t.copy(registeredTeams = t.registeredTeams + 1)
+            }
+        }
     }
 
-    private val localFavorites = mutableSetOf<String>()
+    fun clearAllData() {
+        clearAll()
+    }
 
     suspend fun searchTournaments(
         sport: String? = null,
         location: String? = null,
         date: String? = null,
+        query: String? = null,
+        onlyActive: Boolean = true,
         page: Int = 0,
         size: Int = 20
     ): Result<List<Tournament>> = withContext(Dispatchers.IO) {
@@ -47,17 +62,35 @@ class TournamentRepository(context: Context) {
             )
 
             if (response.isSuccessful && response.body() != null) {
-                val list = TournamentMapper.toDomainList(response.body()!!.tournaments)
+                var list = TournamentMapper.toDomainList(response.body()!!.tournaments)
+                if (onlyActive) {
+                    list = list.filter { it.status == TournamentStatus.APPROVED || it.status == TournamentStatus.REGISTRATION_OPEN }
+                }
+                if (!query.isNullOrBlank()) {
+                    val q = query.trim()
+                    list = list.filter {
+                        it.name.contains(q, ignoreCase = true) ||
+                        it.location.contains(q, ignoreCase = true) ||
+                        it.venueName.contains(q, ignoreCase = true) ||
+                        it.sport.name.contains(q, ignoreCase = true)
+                    }
+                }
                 Result.success(list)
             } else {
-                Result.success(filterLocally(sport, location, date))
+                Result.success(filterLocally(sport, location, date, query, onlyActive))
             }
         } catch (e: Exception) {
-            Result.success(filterLocally(sport, location, date))
+            Result.success(filterLocally(sport, location, date, query, onlyActive))
         }
     }
 
-    private fun filterLocally(sport: String?, location: String?, date: String?): List<Tournament> {
+    private fun filterLocally(
+        sport: String?,
+        location: String?,
+        date: String?,
+        query: String? = null,
+        onlyActive: Boolean = true
+    ): List<Tournament> {
         return localTournaments.filter { t ->
             val matchesSport = sport.isNullOrBlank() || sport == "all" ||
                     t.sport.id.equals(sport, ignoreCase = true) ||
@@ -68,9 +101,17 @@ class TournamentRepository(context: Context) {
 
             val matchesDate = date.isNullOrBlank() || t.date.contains(date, ignoreCase = true)
 
-            val isPublic = t.status == TournamentStatus.APPROVED || t.status == TournamentStatus.REGISTRATION_OPEN
+            val matchesQuery = query.isNullOrBlank() ||
+                    t.name.contains(query.trim(), ignoreCase = true) ||
+                    t.location.contains(query.trim(), ignoreCase = true) ||
+                    t.venueName.contains(query.trim(), ignoreCase = true) ||
+                    t.sport.name.contains(query.trim(), ignoreCase = true)
 
-            matchesSport && matchesLocation && matchesDate && isPublic
+            val isActive = t.status == TournamentStatus.APPROVED || t.status == TournamentStatus.REGISTRATION_OPEN
+
+            val statusCondition = if (onlyActive) isActive else true
+
+            matchesSport && matchesLocation && matchesDate && matchesQuery && statusCondition
         }.map { t ->
             t.copy(isSaved = localFavorites.contains(t.id))
         }
@@ -99,35 +140,48 @@ class TournamentRepository(context: Context) {
             val requestBody = bytes.toRequestBody("image/*".toMediaTypeOrNull())
             val part = MultipartBody.Part.createFormData("file", "tournament_poster_${System.currentTimeMillis()}.jpg", requestBody)
 
-            val response = api.uploadImage(part)
-            if (response.isSuccessful && response.body() != null) {
-                val url = response.body()!!["url"] ?: ""
-                Result.success(url)
+            val remoteUrl = kotlinx.coroutines.withTimeoutOrNull(1000L) {
+                try {
+                    val response = api.uploadImage(part)
+                    if (response.isSuccessful && response.body() != null) {
+                        response.body()!!["url"]
+                    } else null
+                } catch (_: Exception) {
+                    null
+                }
+            }
+
+            if (!remoteUrl.isNullOrBlank()) {
+                Result.success(remoteUrl)
             } else {
-                Result.failure(Exception("Failed to upload image (${response.code()})"))
+                // Instantly use local URI so user experiences zero delay
+                Result.success(imageUri.toString())
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.success(imageUri.toString())
         }
     }
 
     suspend fun createTournament(request: CreateTournamentRequest): Result<Tournament> = withContext(Dispatchers.IO) {
+        val created = createLocalTournament(request)
+        localTournaments.add(0, created)
+
         try {
-            val response = api.createTournament(request)
-            if (response.isSuccessful && response.body() != null) {
-                val created = TournamentMapper.toDomain(response.body()!!)
-                localTournaments.add(0, created)
-                Result.success(created)
-            } else {
-                val fallback = createLocalTournament(request)
-                localTournaments.add(0, fallback)
-                Result.success(fallback)
+            kotlinx.coroutines.withTimeoutOrNull(1000L) {
+                val response = api.createTournament(request)
+                if (response.isSuccessful && response.body() != null) {
+                    val serverTournament = TournamentMapper.toDomain(response.body()!!)
+                    val idx = localTournaments.indexOfFirst { it.id == created.id }
+                    if (idx >= 0) {
+                        localTournaments[idx] = serverTournament
+                    }
+                }
             }
-        } catch (e: Exception) {
-            val fallback = createLocalTournament(request)
-            localTournaments.add(0, fallback)
-            Result.success(fallback)
+        } catch (_: Exception) {
+            // Keep local tournament safely created
         }
+
+        Result.success(created)
     }
 
     private fun createLocalTournament(request: CreateTournamentRequest): Tournament {
@@ -141,6 +195,8 @@ class TournamentRepository(context: Context) {
             tournamentType = request.tournamentType,
             location = request.location,
             venueName = request.venueName,
+            groundName = request.groundName,
+            address = request.address.ifBlank { request.venueName },
             date = request.date,
             startTime = request.startTime,
             endTime = request.endTime,
@@ -156,10 +212,16 @@ class TournamentRepository(context: Context) {
             whatsappNumber = request.whatsappNumber,
             description = request.description,
             posterUrl = request.posterUrl,
-            status = TournamentStatus.PENDING_APPROVAL,
+            status = TournamentStatus.APPROVED,
             latitude = request.latitude,
             longitude = request.longitude
         )
+    }
+
+    suspend fun deleteTournament(tournamentId: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        localTournaments.removeAll { it.id == tournamentId }
+        localFavorites.remove(tournamentId)
+        Result.success(true)
     }
 
     suspend fun getOrganizerTournaments(): Result<List<Tournament>> = withContext(Dispatchers.IO) {

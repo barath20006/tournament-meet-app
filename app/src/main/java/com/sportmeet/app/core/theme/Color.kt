@@ -15,9 +15,13 @@ val SportGreenContainer = Color(0xFFECFDF5)
 val SportGold = Color(0xFFF59E0B)
 val SportGoldDark = Color(0xFFB45309)
 val SportGoldContainer = Color(0xFFFFFBEB)
+val SportGoldBright = Color(0xFFFFB703)
 
 val SportRed = Color(0xFFEF4444)
 val SportRedContainer = Color(0xFFFEF2F2)
+
+val SportPurple = Color(0xFF8B5CF6)
+val SportCyan = Color(0xFF06B6D4)
 
 // Neutral surfaces - Light
 val LightBackground = Color(0xFFF8FAFC)

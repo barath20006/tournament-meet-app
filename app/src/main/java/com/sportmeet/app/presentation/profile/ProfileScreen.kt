@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Favorite
@@ -60,6 +61,8 @@ import com.sportmeet.app.core.theme.SportGold
 import com.sportmeet.app.core.theme.SportRed
 import com.sportmeet.app.data.remote.api.ApiClient
 import com.sportmeet.app.data.repository.AuthRepository
+import com.sportmeet.app.data.repository.RegistrationRepository
+import com.sportmeet.app.data.repository.TournamentRepository
 import com.sportmeet.app.domain.model.UserRole
 
 @Composable
@@ -75,6 +78,7 @@ fun ProfileScreen(
 
     var showServerConfigDialog by remember { mutableStateOf(false) }
     var serverUrlInput by remember { mutableStateOf(ApiClient.getBaseUrl()) }
+    var showClearDataConfirmDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -195,6 +199,16 @@ fun ProfileScreen(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
 
                 ProfileOptionRow(
+                    icon = Icons.Outlined.DeleteSweep,
+                    title = "Clear All App Data",
+                    subtitle = "Reset all tournaments & team registrations",
+                    iconColor = SportRed,
+                    onClick = { showClearDataConfirmDialog = true }
+                )
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+
+                ProfileOptionRow(
                     icon = Icons.Outlined.HelpOutline,
                     title = "About SportMeet",
                     subtitle = "Grassroots Tournament Discovery Platform v1.0",
@@ -229,6 +243,39 @@ fun ProfileScreen(
         }
 
         Spacer(modifier = Modifier.height(40.dp))
+    }
+
+    // Clear Data Confirmation Dialog
+    if (showClearDataConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDataConfirmDialog = false },
+            title = { Text("Clear All App Data?", fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    text = "This will clear all tournaments, registered teams, favorites, and saved drafts. The app will return to a clean state ready for new data.",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        TournamentRepository.clearAll()
+                        RegistrationRepository.clearAll()
+                        showClearDataConfirmDialog = false
+                        Toast.makeText(context, "All app data cleared! Ready for new entries.", Toast.LENGTH_LONG).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SportRed)
+                ) {
+                    Text("Clear All Data", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDataConfirmDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     // Server Config Dialog

@@ -7,41 +7,44 @@ import com.sportmeet.app.domain.model.TournamentStatus
 
 object TournamentMapper {
     fun toDomain(dto: TournamentResponse): Tournament {
-        val sport = Sport.ALL_SPORTS.find { it.id.equals(dto.sportId, ignoreCase = true) }
+        val sportId = dto.sportId.ifBlank { "cricket" }
+        val sport = Sport.ALL_SPORTS.find { it.id.equals(sportId, ignoreCase = true) }
             ?: Sport(
-                id = dto.sportId,
-                name = dto.sportName.ifBlank { "Sport" },
-                iconEmoji = dto.sportEmoji.ifBlank { "🏅" },
+                id = sportId,
+                name = (dto.sportName ?: "").ifBlank { "Sport" },
+                iconEmoji = (dto.sportEmoji ?: "").ifBlank { "🏅" },
                 isPopular = true
             )
 
         val status = try {
-            TournamentStatus.valueOf(dto.status)
-        } catch (e: Exception) {
+            TournamentStatus.valueOf(dto.status ?: "APPROVED")
+        } catch (_: Exception) {
             TournamentStatus.APPROVED
         }
 
         return Tournament(
-            id = dto.id,
-            name = dto.name,
+            id = (dto.id ?: "").ifBlank { "tour_${System.currentTimeMillis()}" },
+            name = (dto.name ?: "").ifBlank { "Grassroots Tournament" },
             sport = sport,
-            tournamentType = dto.tournamentType,
-            location = dto.location,
-            venueName = dto.venueName,
-            date = dto.date,
-            startTime = dto.startTime,
-            endTime = dto.endTime,
-            registrationDeadline = dto.registrationDeadline,
+            tournamentType = (dto.tournamentType ?: "").ifBlank { "Knockout" },
+            location = (dto.location ?: "").ifBlank { "Erode" },
+            venueName = (dto.venueName ?: "").ifBlank { "Sports Ground" },
+            groundName = dto.groundName ?: "",
+            address = dto.address ?: "",
+            date = (dto.date ?: "").ifBlank { "TBD" },
+            startTime = (dto.startTime ?: "").ifBlank { "09:00 AM" },
+            endTime = dto.endTime ?: "",
+            registrationDeadline = dto.registrationDeadline ?: "",
             entryFee = dto.entryFee,
             prizeMoney = dto.prizeMoney,
-            maxTeams = dto.maxTeams,
+            maxTeams = if (dto.maxTeams > 0) dto.maxTeams else 16,
             registeredTeams = dto.registeredTeams,
-            playersPerTeam = dto.playersPerTeam,
-            ageCategory = dto.ageCategory,
-            organizerName = dto.organizerName,
-            contactNumber = dto.contactNumber,
-            whatsappNumber = dto.whatsappNumber,
-            description = dto.description,
+            playersPerTeam = if (dto.playersPerTeam > 0) dto.playersPerTeam else 11,
+            ageCategory = (dto.ageCategory ?: "").ifBlank { "Open" },
+            organizerName = (dto.organizerName ?: "").ifBlank { "Organizer" },
+            contactNumber = dto.contactNumber ?: "",
+            whatsappNumber = dto.whatsappNumber ?: "",
+            description = dto.description ?: "",
             posterUrl = dto.posterUrl,
             status = status,
             isSaved = dto.isSaved,

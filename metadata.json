@@ -1,0 +1,6 @@
+{
+  "name": "SportMeet",
+  "description": "Discover, organize, and participate in grassroots sports tournaments around you.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

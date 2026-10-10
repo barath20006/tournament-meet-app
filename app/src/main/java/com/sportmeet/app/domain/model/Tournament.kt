@@ -7,6 +7,8 @@ data class Tournament(
     val tournamentType: String = "Knockout",
     val location: String,
     val venueName: String,
+    val groundName: String = "",
+    val address: String = "",
     val date: String,
     val startTime: String,
     val endTime: String = "",

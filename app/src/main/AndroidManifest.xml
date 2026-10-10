@@ -7,6 +7,18 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <queries>
+        <package android:name="com.google.android.apps.maps" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:name=".SportMeetApp"
         android:allowBackup="true"
@@ -16,6 +28,11 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.SportMeet">
+
+        <!-- Google Maps API Key: Configurable via Secrets or BuildConfig if custom Maps SDK features are desired -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="" />
 
         <activity
             android:name=".MainActivity"

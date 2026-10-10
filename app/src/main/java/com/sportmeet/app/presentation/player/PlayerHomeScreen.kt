@@ -33,9 +33,13 @@ import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Flag
+import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.ui.platform.testTag
+import java.util.Locale
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -68,17 +72,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sportmeet.app.core.common.AppBottomBar
+import com.sportmeet.app.core.common.FullScreenImageViewerDialog
+import com.sportmeet.app.core.common.SearchFilterScope
 import com.sportmeet.app.core.common.SportChip
 import com.sportmeet.app.core.common.SportMeetTopBar
 import com.sportmeet.app.core.common.StatusBadge
 import com.sportmeet.app.core.common.TournamentCard
+import com.sportmeet.app.core.common.TournamentSearchBar
 import com.sportmeet.app.core.navigation.BottomNavItem
 import com.sportmeet.app.core.theme.SportBlue
 import com.sportmeet.app.core.theme.SportGold
@@ -89,6 +98,7 @@ import com.sportmeet.app.data.repository.TournamentRepository
 import com.sportmeet.app.domain.data.SampleData
 import com.sportmeet.app.domain.model.Sport
 import com.sportmeet.app.domain.model.Tournament
+import com.sportmeet.app.domain.model.TournamentStatus
 import com.sportmeet.app.domain.model.UserRole
 import com.sportmeet.app.presentation.profile.ProfileScreen
 import kotlinx.coroutines.launch
@@ -107,13 +117,16 @@ fun PlayerHomeScreen(
 
     var currentTab by remember { mutableStateOf(BottomNavItem.PlayerHomeTab.route) }
     var searchQuery by remember { mutableStateOf("") }
+    var searchScope by remember { mutableStateOf(SearchFilterScope.ALL) }
+    var onlyActiveTournaments by remember { mutableStateOf(true) }
     var selectedSportId by remember { mutableStateOf<String?>(null) }
     var selectedLocation by remember { mutableStateOf<String?>(null) }
     var searchDateQuery by remember { mutableStateOf("") }
 
     // Tournaments state list
-    val tournaments = remember { mutableStateListOf(*SampleData.sampleTournaments.toTypedArray()) }
+    val tournaments = remember { mutableStateListOf<Tournament>() }
     var selectedTournamentForDetail by remember { mutableStateOf<Tournament?>(null) }
+    var fullScreenPosterTournament by remember { mutableStateOf<Tournament?>(null) }
     var showRegisterDialog by remember { mutableStateOf(false) }
     var showReportDialog by remember { mutableStateOf(false) }
     var reportReason by remember { mutableStateOf("Fake tournament") }
@@ -127,7 +140,9 @@ fun PlayerHomeScreen(
             val result = tournamentRepo.searchTournaments(
                 sport = selectedSportId,
                 location = selectedLocation,
-                date = searchDateQuery
+                date = searchDateQuery,
+                query = searchQuery,
+                onlyActive = onlyActiveTournaments
             )
             if (result.isSuccess) {
                 tournaments.clear()
@@ -140,12 +155,40 @@ fun PlayerHomeScreen(
         reloadTournaments()
     }
 
-    // Filter logic for quick text search
+    // Filter logic for quick text search by Name or Location and Active status
     val displayedTournaments = tournaments.filter { tournament ->
-        searchQuery.isBlank() ||
-                tournament.name.contains(searchQuery, ignoreCase = true) ||
-                tournament.location.contains(searchQuery, ignoreCase = true) ||
-                tournament.sport.name.contains(searchQuery, ignoreCase = true)
+        val isActive = tournament.status == TournamentStatus.APPROVED ||
+                tournament.status == TournamentStatus.REGISTRATION_OPEN
+
+        if (onlyActiveTournaments && !isActive) {
+            return@filter false
+        }
+
+        val q = searchQuery.trim()
+        val matchesText = if (q.isBlank()) {
+            true
+        } else {
+            when (searchScope) {
+                SearchFilterScope.NAME -> {
+                    tournament.name.contains(q, ignoreCase = true)
+                }
+                SearchFilterScope.LOCATION -> {
+                    tournament.location.contains(q, ignoreCase = true) ||
+                    tournament.venueName.contains(q, ignoreCase = true)
+                }
+                SearchFilterScope.ALL -> {
+                    tournament.name.contains(q, ignoreCase = true) ||
+                    tournament.location.contains(q, ignoreCase = true) ||
+                    tournament.venueName.contains(q, ignoreCase = true) ||
+                    tournament.sport.name.contains(q, ignoreCase = true)
+                }
+            }
+        }
+
+        val matchesSport = selectedSportId == null || tournament.sport.id.equals(selectedSportId, ignoreCase = true)
+        val matchesLocation = selectedLocation == null || selectedLocation == "All" || tournament.location.equals(selectedLocation, ignoreCase = true)
+
+        matchesText && matchesSport && matchesLocation
     }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -200,6 +243,10 @@ fun PlayerHomeScreen(
                     PlayerDedicatedSearchView(
                         searchQuery = searchQuery,
                         onSearchQueryChange = { searchQuery = it },
+                        searchScope = searchScope,
+                        onSearchScopeChange = { searchScope = it },
+                        onlyActive = onlyActiveTournaments,
+                        onToggleOnlyActive = { onlyActiveTournaments = it },
                         selectedSportId = selectedSportId,
                         onSportSelected = {
                             selectedSportId = it
@@ -222,6 +269,15 @@ fun PlayerHomeScreen(
                                 tournamentRepo.toggleFavorite(tour.id, tour.isSaved)
                                 reloadTournaments()
                             }
+                        },
+                        onResetFilters = {
+                            searchQuery = ""
+                            searchScope = SearchFilterScope.ALL
+                            onlyActiveTournaments = true
+                            selectedSportId = null
+                            selectedLocation = null
+                            searchDateQuery = ""
+                            reloadTournaments()
                         }
                     )
                 }
@@ -249,50 +305,26 @@ fun PlayerHomeScreen(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Browse grassroots tournaments or search by sport, city & date.",
+                                    text = "Filter active grassroots tournaments by name, location, or sport.",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
 
                                 Spacer(modifier = Modifier.height(14.dp))
 
-                                // Search input box
-                                OutlinedTextField(
-                                    value = searchQuery,
-                                    onValueChange = { searchQuery = it },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    placeholder = {
-                                        Text(
-                                            text = "Search cricket, football, Erode, Salem...",
-                                            fontSize = 14.sp
-                                        )
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Search,
-                                            contentDescription = "Search",
-                                            tint = SportBlue
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        if (searchQuery.isNotEmpty()) {
-                                            IconButton(onClick = { searchQuery = "" }) {
-                                                Icon(
-                                                    imageVector = Icons.Outlined.Clear,
-                                                    contentDescription = "Clear",
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        }
-                                    },
-                                    shape = RoundedCornerShape(14.dp),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        focusedBorderColor = SportBlue,
-                                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                                    ),
-                                    singleLine = true
+                                // Tournament Search Bar with Name/Location filter & Active status
+                                TournamentSearchBar(
+                                    searchQuery = searchQuery,
+                                    onSearchQueryChange = { searchQuery = it },
+                                    searchScope = searchScope,
+                                    onSearchScopeChange = { searchScope = it },
+                                    onlyActive = onlyActiveTournaments,
+                                    onToggleOnlyActive = { onlyActiveTournaments = it },
+                                    matchingResultsCount = displayedTournaments.size,
+                                    onQuickLocationSelected = { loc ->
+                                        searchScope = SearchFilterScope.LOCATION
+                                        searchQuery = if (searchQuery.equals(loc, ignoreCase = true)) "" else loc
+                                    }
                                 )
                             }
                         }
@@ -438,13 +470,19 @@ fun PlayerHomeScreen(
                                         Text(text = "🔍", fontSize = 42.sp)
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
-                                            text = "No Tournaments Found",
+                                            text = if (searchQuery.isNotBlank()) "No Tournaments Matching \"$searchQuery\"" else "No Active Tournaments Found",
                                             style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
                                         )
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
-                                            text = "Try clearing your filters or search keywords.",
+                                            text = when {
+                                                searchScope == SearchFilterScope.NAME -> "No active sports tournaments matched title \"$searchQuery\". Try checking the spelling or switching to 'All'."
+                                                searchScope == SearchFilterScope.LOCATION -> "No active sports tournaments found in \"$searchQuery\". Try choosing Erode, Salem, or Coimbatore."
+                                                searchQuery.isNotBlank() -> "No active tournaments match this name or location. Try clearing your search keyword."
+                                                else -> "Try clearing your filters to see more tournaments."
+                                            },
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             textAlign = TextAlign.Center
@@ -453,13 +491,15 @@ fun PlayerHomeScreen(
                                         OutlinedButton(
                                             onClick = {
                                                 searchQuery = ""
+                                                searchScope = SearchFilterScope.ALL
+                                                onlyActiveTournaments = true
                                                 selectedSportId = null
                                                 selectedLocation = null
                                                 searchDateQuery = ""
                                                 reloadTournaments()
                                             }
                                         ) {
-                                            Text("Reset All Filters")
+                                            Text("Clear Search & View Active Tournaments")
                                         }
                                     }
                                 }
@@ -499,14 +539,60 @@ fun PlayerHomeScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 if (!tournament.posterUrl.isNullOrBlank()) {
-                    com.sportmeet.app.core.common.TournamentPosterImage(
-                        posterUrl = tournament.posterUrl,
-                        sportEmoji = tournament.sport.iconEmoji,
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(170.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                    )
+                            .height(210.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable {
+                                fullScreenPosterTournament = tournament
+                            }
+                    ) {
+                        com.sportmeet.app.core.common.TournamentPosterImage(
+                            posterUrl = tournament.posterUrl,
+                            sportEmoji = tournament.sport.iconEmoji,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        // Bottom gradient shadow for readable text badge
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(65.dp)
+                                .align(Alignment.BottomCenter)
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
+                                    )
+                                )
+                        )
+
+                        // Tap badge to view full poster
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(10.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(Color.Black.copy(alpha = 0.8f))
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Fullscreen,
+                                contentDescription = "View full poster",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "View Full Poster (9:16)",
+                                color = Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.height(14.dp))
                 }
 
@@ -540,25 +626,171 @@ fun PlayerHomeScreen(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Schedule & Location
+                // Schedule
                 Text(
-                    text = "SCHEDULE & VENUE",
+                    text = "SCHEDULE",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "📅 ${tournament.date}  •  ⏰ ${tournament.startTime}",
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.SemiBold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "📍 ${tournament.venueName}, ${tournament.location}",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // 📍 VENUE SECTION
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("player_venue_location_card"),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = "📍", fontSize = 18.sp)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Venue",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
+                            if (tournament.latitude != null && tournament.longitude != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(SportGreen.copy(alpha = 0.15f))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "🎯 Exact Ground Pinned",
+                                        color = SportGreen,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        // [Venue Name]
+                        Text(
+                            text = tournament.venueName,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        // [Ground Name]
+                        if (tournament.groundName.isNotBlank()) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Place,
+                                    contentDescription = null,
+                                    tint = SportGreen,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = tournament.groundName,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 13.sp,
+                                    color = SportGreen
+                                )
+                            }
+                        }
+
+                        // [Address]
+                        val addressText = if (tournament.address.isNotBlank()) {
+                            if (tournament.address.contains(tournament.location, ignoreCase = true)) {
+                                tournament.address
+                            } else {
+                                "${tournament.address}, ${tournament.location}"
+                            }
+                        } else {
+                            tournament.location
+                        }
+                        Text(
+                            text = addressText,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        // Coordinates if available
+                        if (tournament.latitude != null && tournament.longitude != null) {
+                            Text(
+                                text = "Coordinates: ${"%.6f".format(Locale.US, tournament.latitude)}, ${"%.6f".format(Locale.US, tournament.longitude)}",
+                                fontSize = 11.sp,
+                                color = SportBlue,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // [ 🗺️ VIEW LOCATION ] Button
+                        Button(
+                            onClick = {
+                                if (tournament.latitude != null && tournament.longitude != null) {
+                                    val lat = tournament.latitude
+                                    val lng = tournament.longitude
+                                    val groundLabel = (tournament.groundName.ifBlank { tournament.venueName }).ifBlank { "Tournament Ground" }
+                                    val geoUri = Uri.parse("geo:$lat,$lng?q=$lat,$lng(${Uri.encode(groundLabel)})")
+                                    val intent = Intent(Intent.ACTION_VIEW, geoUri).apply {
+                                        setPackage("com.google.android.apps.maps")
+                                    }
+                                    try {
+                                        context.startActivity(intent)
+                                    } catch (_: Exception) {
+                                        val fallbackUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$lat,$lng")
+                                        try {
+                                            context.startActivity(Intent(Intent.ACTION_VIEW, fallbackUri))
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Could not open map: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                } else {
+                                    val query = listOf(tournament.venueName, tournament.address, tournament.location)
+                                        .filter { it.isNotBlank() }
+                                        .joinToString(", ")
+                                    val fallbackUri = Uri.parse("geo:0,0?q=${Uri.encode(query)}")
+                                    try {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, fallbackUri))
+                                    } catch (_: Exception) {
+                                        val webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=${Uri.encode(query)}")
+                                        try { context.startActivity(Intent(Intent.ACTION_VIEW, webUri)) } catch (_: Exception) {}
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(44.dp)
+                                .testTag("view_location_button"),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = SportBlue)
+                        ) {
+                            Text(
+                                text = "🗺️ VIEW LOCATION",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -659,13 +891,33 @@ fun PlayerHomeScreen(
 
                     OutlinedButton(
                         onClick = {
-                            val geoUri = if (tournament.latitude != null && tournament.longitude != null) {
-                                Uri.parse("geo:${tournament.latitude},${tournament.longitude}?q=${Uri.encode(tournament.venueName + ", " + tournament.location)}")
+                            if (tournament.latitude != null && tournament.longitude != null) {
+                                val lat = tournament.latitude
+                                val lng = tournament.longitude
+                                val groundLabel = (tournament.groundName.ifBlank { tournament.venueName }).ifBlank { "Tournament Ground" }
+                                val geoUri = Uri.parse("geo:$lat,$lng?q=$lat,$lng(${Uri.encode(groundLabel)})")
+                                val intent = Intent(Intent.ACTION_VIEW, geoUri).apply {
+                                    setPackage("com.google.android.apps.maps")
+                                }
+                                try {
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {
+                                    val fallbackUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$lat,$lng")
+                                    try {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, fallbackUri))
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Could not open map: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             } else {
-                                Uri.parse("geo:0,0?q=${Uri.encode(tournament.venueName + ", " + tournament.location)}")
+                                val query = listOf(tournament.venueName, tournament.address, tournament.location)
+                                    .filter { it.isNotBlank() }
+                                    .joinToString(", ")
+                                val geoUri = Uri.parse("geo:0,0?q=${Uri.encode(query)}")
+                                try {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, geoUri))
+                                } catch (_: Exception) {}
                             }
-                            val intent = Intent(Intent.ACTION_VIEW, geoUri)
-                            context.startActivity(intent)
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp)
@@ -743,6 +995,17 @@ fun PlayerHomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+
+    // Full Screen Poster Image Viewer
+    fullScreenPosterTournament?.let { tournament ->
+        FullScreenImageViewerDialog(
+            posterUrl = tournament.posterUrl,
+            title = tournament.name,
+            sportEmoji = tournament.sport.iconEmoji,
+            subtitle = "${tournament.location} • ${tournament.venueName} • 9:16 Full Poster",
+            onDismiss = { fullScreenPosterTournament = null }
+        )
     }
 
     // Register Team Dialog
@@ -926,6 +1189,10 @@ fun PlayerHomeScreen(
 private fun PlayerDedicatedSearchView(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
+    searchScope: SearchFilterScope,
+    onSearchScopeChange: (SearchFilterScope) -> Unit,
+    onlyActive: Boolean,
+    onToggleOnlyActive: (Boolean) -> Unit,
     selectedSportId: String?,
     onSportSelected: (String?) -> Unit,
     selectedLocation: String?,
@@ -934,10 +1201,10 @@ private fun PlayerDedicatedSearchView(
     onSearchDateChange: (String) -> Unit,
     tournaments: List<Tournament>,
     onTournamentClick: (Tournament) -> Unit,
-    onSaveToggle: (Tournament) -> Unit
+    onSaveToggle: (Tournament) -> Unit,
+    onResetFilters: () -> Unit
 ) {
     var sportMenuExpanded by remember { mutableStateOf(false) }
-    val cities = listOf("All", "Erode", "Salem", "Coimbatore", "Tiruppur", "Namakkal")
 
     LazyColumn(
         modifier = Modifier
@@ -946,7 +1213,25 @@ private fun PlayerDedicatedSearchView(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Dedicated Search Panel Card (Prompt Section 38 Search UX)
+        // Tournament Search Bar with Name & Location Scope
+        item {
+            TournamentSearchBar(
+                searchQuery = searchQuery,
+                onSearchQueryChange = onSearchQueryChange,
+                searchScope = searchScope,
+                onSearchScopeChange = onSearchScopeChange,
+                onlyActive = onlyActive,
+                onToggleOnlyActive = onToggleOnlyActive,
+                matchingResultsCount = tournaments.size,
+                onQuickLocationSelected = { loc ->
+                    onLocationSelected(if (selectedLocation == loc) null else loc)
+                    onSearchQueryChange(loc)
+                    onSearchScopeChange(SearchFilterScope.LOCATION)
+                }
+            )
+        }
+
+        // Additional Refine Panel Card: Sport & Date
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -961,19 +1246,9 @@ private fun PlayerDedicatedSearchView(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = "🔍 Search Tournaments",
+                        text = "🎯 Refine Filters",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
-                    )
-
-                    // Keyword
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        label = { Text("Keyword / Title") },
-                        placeholder = { Text("e.g. Cricket Cup, Trophy") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
                     )
 
                     // Sport Selector
@@ -1015,33 +1290,6 @@ private fun PlayerDedicatedSearchView(
                         }
                     }
 
-                    // Location / City
-                    Text(text = "Location", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        cities.forEach { city ->
-                            val isSel = (selectedLocation == null && city == "All") || selectedLocation == city
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isSel) SportBlue else MaterialTheme.colorScheme.surfaceVariant)
-                                    .clickable { onLocationSelected(if (city == "All") null else city) }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Text(
-                                    text = city,
-                                    color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 12.sp,
-                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
-                                )
-                            }
-                        }
-                    }
-
                     // Date Input
                     OutlinedTextField(
                         value = searchDate,
@@ -1062,12 +1310,12 @@ private fun PlayerDedicatedSearchView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Matching Tournaments",
+                    text = "Matching Active Tournaments",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "${tournaments.size} Found",
+                    text = "${tournaments.size} Available",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1089,13 +1337,18 @@ private fun PlayerDedicatedSearchView(
                     ) {
                         Text(text = "🔍", fontSize = 36.sp)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "No tournaments found", fontWeight = FontWeight.Bold)
+                        Text(text = "No active tournaments found", fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Try:\n• Another sport\n• Another location\n• Another date",
+                            text = "Try searching by another title, city (e.g. Erode, Salem), or resetting filters.",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        OutlinedButton(onClick = onResetFilters) {
+                            Text("Reset Search Filters")
+                        }
                     }
                 }
             }

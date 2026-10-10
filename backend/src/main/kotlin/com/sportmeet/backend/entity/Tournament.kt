@@ -33,6 +33,9 @@ data class Tournament(
     @Column(name = "venue_name", nullable = false, length = 150)
     var venueName: String = "",
 
+    @Column(name = "ground_name", length = 150)
+    var groundName: String = "",
+
     @Column(length = 255)
     var address: String = "",
 

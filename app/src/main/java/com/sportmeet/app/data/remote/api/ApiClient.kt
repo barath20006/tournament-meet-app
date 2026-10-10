@@ -80,9 +80,9 @@ object ApiClient {
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .addInterceptor(logging)
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(3, TimeUnit.SECONDS)
+            .readTimeout(4, TimeUnit.SECONDS)
+            .writeTimeout(4, TimeUnit.SECONDS)
             .build()
 
         return Retrofit.Builder()

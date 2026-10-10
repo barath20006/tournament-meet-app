@@ -139,12 +139,20 @@ class TournamentService(
                 )
             }
 
+        if (request.latitude != null && (request.latitude < -90.0 || request.latitude > 90.0)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid latitude: must be between -90 and 90")
+        }
+        if (request.longitude != null && (request.longitude < -180.0 || request.longitude > 180.0)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid longitude: must be between -180 and 180")
+        }
+
         val tournament = Tournament(
             name = request.name.trim(),
             sport = sport,
             tournamentType = request.tournamentType,
             location = request.location.trim(),
             venueName = request.venueName.trim(),
+            groundName = request.groundName.trim(),
             address = request.address.trim(),
             date = request.date.trim(),
             startTime = request.startTime.trim(),
@@ -185,6 +193,7 @@ class TournamentService(
             tournamentType = t.tournamentType,
             location = t.location,
             venueName = t.venueName,
+            groundName = t.groundName,
             address = t.address,
             date = t.date,
             startTime = t.startTime,

@@ -53,11 +53,15 @@ fun TournamentPosterImage(
     var isLoading by remember(posterUrl, posterUri) { mutableStateOf(false) }
 
     LaunchedEffect(posterUrl, posterUri) {
-        if (posterUri != null) {
+        val targetUri = posterUri ?: if (!posterUrl.isNullOrBlank() && (posterUrl.startsWith("content://") || posterUrl.startsWith("file://"))) {
+            try { Uri.parse(posterUrl) } catch (_: Exception) { null }
+        } else null
+
+        if (targetUri != null) {
             isLoading = true
             withContext(Dispatchers.IO) {
                 try {
-                    context.contentResolver.openInputStream(posterUri)?.use { input ->
+                    context.contentResolver.openInputStream(targetUri)?.use { input ->
                         val options = BitmapFactory.Options().apply {
                             inSampleSize = 2 // downsample for performance and memory
                         }

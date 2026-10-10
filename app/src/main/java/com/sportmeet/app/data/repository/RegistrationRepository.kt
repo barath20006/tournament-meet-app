@@ -11,35 +11,14 @@ import kotlinx.coroutines.withContext
 class RegistrationRepository(context: Context) {
     private val api = ApiClient.getApi(context)
 
-    // In-memory cache of registrations
-    private val localRegistrations = mutableListOf(
-        RegistrationResponse(
-            id = "reg_001",
-            tournamentId = "tour_001",
-            tournamentName = "Erode Cricket Cup 2026",
-            teamName = "Erode Strikers XI",
-            captainName = "Arun Kumar",
-            phone = "+91 98420 12345",
-            email = "arun@sportmeet.com",
-            numberOfPlayers = 11,
-            notes = "Leather ball cricket team ready.",
-            status = "APPROVED",
-            registeredAt = "2026-09-25 10:30 AM"
-        ),
-        RegistrationResponse(
-            id = "reg_002",
-            tournamentId = "tour_001",
-            tournamentName = "Erode Cricket Cup 2026",
-            teamName = "Kongu Titans",
-            captainName = "Vignesh S.",
-            phone = "+91 98421 99887",
-            email = "vignesh@sportmeet.com",
-            numberOfPlayers = 11,
-            notes = "College champion squad.",
-            status = "PENDING",
-            registeredAt = "2026-09-26 03:15 PM"
-        )
-    )
+    companion object {
+        // Shared in-memory cache of registrations - starts clean with NO dummy data
+        val localRegistrations = mutableListOf<RegistrationResponse>()
+
+        fun clearAll() {
+            localRegistrations.clear()
+        }
+    }
 
     suspend fun registerTeam(
         tournamentId: String,
@@ -67,6 +46,7 @@ class RegistrationRepository(context: Context) {
             if (response.isSuccessful && response.body() != null) {
                 val reg = response.body()!!
                 localRegistrations.add(0, reg)
+                TournamentRepository.incrementRegisteredTeams(tournamentId)
                 Result.success(reg)
             } else {
                 val mock = RegistrationResponse(
@@ -83,6 +63,7 @@ class RegistrationRepository(context: Context) {
                     registeredAt = "Just now"
                 )
                 localRegistrations.add(0, mock)
+                TournamentRepository.incrementRegisteredTeams(tournamentId)
                 Result.success(mock)
             }
         } catch (e: Exception) {
@@ -100,6 +81,7 @@ class RegistrationRepository(context: Context) {
                 registeredAt = "Just now"
             )
             localRegistrations.add(0, mock)
+            TournamentRepository.incrementRegisteredTeams(tournamentId)
             Result.success(mock)
         }
     }

@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS tournaments (
     tournament_type VARCHAR(50) DEFAULT 'Knockout',
     location VARCHAR(100) NOT NULL,
     venue_name VARCHAR(150) NOT NULL,
+    ground_name VARCHAR(150),
     address VARCHAR(255),
     tournament_date VARCHAR(50) NOT NULL,
     start_time VARCHAR(20) NOT NULL,
