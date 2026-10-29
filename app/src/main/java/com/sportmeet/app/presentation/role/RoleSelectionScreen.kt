@@ -31,6 +31,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,8 +47,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sportmeet.app.core.theme.SportBlue
 import com.sportmeet.app.core.theme.SportGold
+import com.sportmeet.app.core.theme.SportPrimary
 import com.sportmeet.app.domain.model.UserRole
 
 @Composable
@@ -63,59 +64,76 @@ fun RoleSelectionScreen(
             .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(horizontal = 22.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = SportPrimary.copy(alpha = 0.12f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, SportPrimary.copy(alpha = 0.3f))
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
             Text(
-                text = "Choose Your Role",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Select how you would like to use SportMeet. You can change this at any time from your profile or top bar.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Player Option Card
-            RoleCard(
-                role = UserRole.PLAYER,
-                title = "Player / Team",
-                badgeEmoji = "🏏 ⚽",
-                description = "Find and enter tournaments across cricket, football, volleyball, badminton & more. Call organizers & view venues.",
-                icon = Icons.Outlined.SportsSoccer,
-                accentColor = SportBlue,
-                isSelected = selectedRole == UserRole.PLAYER,
-                onClick = { selectedRole = UserRole.PLAYER }
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Organizer Option Card
-            RoleCard(
-                role = UserRole.ORGANIZER,
-                title = "Tournament Organizer",
-                badgeEmoji = "🏆 📢",
-                description = "Post your tournaments with fees, prizes, and venue maps. Accept squad registrations and manage matches.",
-                icon = Icons.Outlined.EmojiEvents,
-                accentColor = SportGold,
-                isSelected = selectedRole == UserRole.ORGANIZER,
-                onClick = { selectedRole = UserRole.ORGANIZER }
+                text = "STEP 1 OF 2: PROFILE ROLE",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 0.8.sp,
+                color = SportPrimary,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Text(
+            text = "Choose Your Experience",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Black,
+            fontSize = 26.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Select how you'll primarily use Sports Arena. You can seamlessly switch between Player and Organizer modes at any time.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            lineHeight = 20.sp
+        )
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // Player Option Card
+        RoleCard(
+            role = UserRole.PLAYER,
+            title = "Player & Team Captain",
+            badgeLabel = "DISCOVER & REGISTER",
+            badgeEmoji = "🏏 ⚽ 🏸",
+            description = "Explore active grassroots tournaments, view exact playing fields on Google Maps, call organizers directly, and enter your squad.",
+            icon = Icons.Outlined.SportsSoccer,
+            accentColor = SportPrimary,
+            isSelected = selectedRole == UserRole.PLAYER,
+            onClick = { selectedRole = UserRole.PLAYER }
+        )
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        // Organizer Option Card
+        RoleCard(
+            role = UserRole.ORGANIZER,
+            title = "Tournament Host",
+            badgeLabel = "POST & MANAGE",
+            badgeEmoji = "🏆 📢 🎯",
+            description = "Publish your local cups and tournaments with custom entry fees, trophy prize pools, exact venue GPS pins, and manage registered teams.",
+            icon = Icons.Outlined.EmojiEvents,
+            accentColor = SportGold,
+            isSelected = selectedRole == UserRole.ORGANIZER,
+            onClick = { selectedRole = UserRole.ORGANIZER }
+        )
 
         Spacer(modifier = Modifier.height(36.dp))
 
@@ -124,24 +142,27 @@ fun RoleSelectionScreen(
             onClick = { onRoleSelected(selectedRole) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(54.dp),
-            shape = RoundedCornerShape(14.dp),
+                .height(56.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (selectedRole == UserRole.ORGANIZER) SportGold else SportBlue
-            )
+                containerColor = if (selectedRole == UserRole.ORGANIZER) SportGold else SportPrimary
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp, pressedElevation = 8.dp)
         ) {
             Text(
                 text = "Continue as ${if (selectedRole == UserRole.PLAYER) "Player" else "Organizer"}",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 16.5.sp,
+                fontWeight = FontWeight.ExtraBold
             )
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
                 imageVector = Icons.Outlined.ArrowForward,
                 contentDescription = null,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -149,6 +170,7 @@ fun RoleSelectionScreen(
 private fun RoleCard(
     role: UserRole,
     title: String,
+    badgeLabel: String,
     badgeEmoji: String,
     description: String,
     icon: ImageVector,
@@ -158,27 +180,27 @@ private fun RoleCard(
     modifier: Modifier = Modifier
 ) {
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+        targetValue = if (isSelected) accentColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
         label = "roleBorder"
     )
     val bgColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.06f) else MaterialTheme.colorScheme.surface,
+        targetValue = if (isSelected) accentColor.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface,
         label = "roleBg"
     )
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(22.dp))
             .border(
                 width = if (isSelected) 2.dp else 1.dp,
                 color = borderColor,
-                shape = RoundedCornerShape(18.dp)
+                shape = RoundedCornerShape(22.dp)
             )
             .clickable { onClick() },
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 6.dp else 1.dp)
     ) {
         Column(
             modifier = Modifier
@@ -195,29 +217,41 @@ private fun RoleCard(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(accentColor.copy(alpha = 0.15f)),
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(accentColor.copy(alpha = 0.16f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
                             tint = accentColor,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(14.dp))
                     Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = badgeEmoji,
+                                fontSize = 13.sp
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = badgeLabel,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 0.6.sp,
+                                color = accentColor
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = title,
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = badgeEmoji,
-                            fontSize = 12.sp
                         )
                     }
                 }
@@ -227,7 +261,7 @@ private fun RoleCard(
                         imageVector = Icons.Filled.CheckCircle,
                         contentDescription = "Selected",
                         tint = accentColor,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(26.dp)
                     )
                 }
             }
@@ -237,6 +271,8 @@ private fun RoleCard(
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
+                fontSize = 13.sp,
+                lineHeight = 19.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

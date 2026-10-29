@@ -2,6 +2,7 @@ package com.sportmeet.app.presentation.profile
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -99,35 +100,41 @@ fun ProfileScreen(
         // Profile Header Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(22.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
+                        shape = RoundedCornerShape(22.dp)
+                    )
+                    .padding(22.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
                     modifier = Modifier
-                        .size(72.dp)
-                        .clip(CircleShape)
-                        .background(if (currentRole == UserRole.ORGANIZER) SportGold else SportBlue),
+                        .size(76.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(if (currentRole == UserRole.ORGANIZER) SportGold.copy(alpha = 0.18f) else SportBlue.copy(alpha = 0.14f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = if (currentRole == UserRole.ORGANIZER) "📢" else "⚽",
-                        fontSize = 34.sp
+                        fontSize = 38.sp
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
                     text = sessionManager.userName.ifBlank { "Grassroots Athlete" },
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Black,
+                    fontSize = 20.sp
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -138,7 +145,7 @@ fun ProfileScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Box(
                     modifier = Modifier
@@ -146,12 +153,13 @@ fun ProfileScreen(
                         .background(
                             (if (currentRole == UserRole.ORGANIZER) SportGold else SportBlue).copy(alpha = 0.15f)
                         )
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                        .padding(horizontal = 14.dp, vertical = 5.dp)
                 ) {
                     Text(
                         text = currentRole.title.uppercase(),
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.6.sp,
                         color = if (currentRole == UserRole.ORGANIZER) SportGold else SportBlue
                     )
                 }
@@ -210,11 +218,11 @@ fun ProfileScreen(
 
                 ProfileOptionRow(
                     icon = Icons.Outlined.HelpOutline,
-                    title = "About SportMeet",
-                    subtitle = "Grassroots Tournament Discovery Platform v1.0",
+                    title = "About Sports Arena",
+                    subtitle = "Discover Tournaments — Grassroots Platform v1.0",
                     iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     onClick = {
-                        Toast.makeText(context, "SportMeet v1.0.0 — Built with Kotlin & Compose", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Sports Arena v1.0.0 — Built with Kotlin & Compose", Toast.LENGTH_SHORT).show()
                     }
                 )
             }

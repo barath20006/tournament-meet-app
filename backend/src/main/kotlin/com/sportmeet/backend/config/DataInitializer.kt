@@ -44,7 +44,7 @@ class DataInitializer(
             userRepository.save(
                 User(
                     id = "usr_admin_001",
-                    name = "SportMeet Admin",
+                    name = "Sports Arena Admin",
                     email = "admin@sportmeet.com",
                     phone = "+91 90000 00001",
                     passwordHash = passwordEncoder.encode("admin123"),

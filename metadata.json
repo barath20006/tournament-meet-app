@@ -1,6 +1,6 @@
 {
-  "name": "SportMeet",
-  "description": "Discover, organize, and participate in grassroots sports tournaments around you.",
+  "name": "Sports Arena",
+  "description": "Discover Tournaments — Grassroots sports tournaments platform.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

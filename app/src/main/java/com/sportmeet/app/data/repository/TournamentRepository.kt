@@ -8,7 +8,6 @@ import com.sportmeet.app.data.remote.dto.CreateTournamentRequest
 import com.sportmeet.app.data.remote.dto.ReportResponse
 import com.sportmeet.app.data.remote.dto.ReportTournamentRequest
 import com.sportmeet.app.data.remote.dto.UpdateStatusRequest
-import com.sportmeet.app.domain.data.SampleData
 import com.sportmeet.app.domain.model.Tournament
 import com.sportmeet.app.domain.model.TournamentStatus
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +20,7 @@ class TournamentRepository(context: Context) {
     private val api = ApiClient.getApi(context)
 
     companion object {
-        // Shared local state across screens and instances - starts clean with NO data
+        // Shared local state across screens and instances - starts clean with no initial tournaments
         val localTournaments = mutableListOf<Tournament>()
         val localFavorites = mutableSetOf<String>()
 

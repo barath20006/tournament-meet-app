@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SportMeet"
+rootProject.name = "Sports Arena"
 include(":app")
 include(":backend")

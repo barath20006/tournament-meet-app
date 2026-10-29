@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,9 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sportmeet.app.core.theme.SportBlue
-import com.sportmeet.app.core.theme.SportBlueDark
 import com.sportmeet.app.core.theme.SportGold
+import com.sportmeet.app.core.theme.SportPrimary
 import kotlinx.coroutines.delay
 
 @Composable
@@ -72,9 +73,9 @@ fun SplashScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        SportBlueDark,
-                        SportBlue,
-                        Color(0xFF0F172A)
+                        Color(0xFF0F172A),
+                        Color(0xFF1E3A8A),
+                        SportPrimary
                     )
                 )
             ),
@@ -89,38 +90,44 @@ fun SplashScreen(
         ) {
             Box(
                 modifier = Modifier
-                    .size(96.dp)
-                    .clip(CircleShape)
+                    .size(104.dp)
+                    .clip(RoundedCornerShape(32.dp))
                     .background(Color.White.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "🏆",
-                    fontSize = 54.sp
+                    fontSize = 56.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "SportMeet",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
-                letterSpacing = (-0.5).sp
+                text = "SPORTMEET",
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp,
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "Find Your Next Tournament",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
-                color = SportGold,
-                letterSpacing = 0.5.sp
-            )
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = Color.White.copy(alpha = 0.12f)
+            ) {
+                Text(
+                    text = "⚡ GRASSROOTS TOURNAMENTS & EXACT GROUNDS",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 0.8.sp,
+                    color = SportGold,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                )
+            }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(52.dp))
 
             CircularProgressIndicator(
                 color = SportGold,

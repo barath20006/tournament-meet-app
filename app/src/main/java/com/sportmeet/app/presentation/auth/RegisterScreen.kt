@@ -39,6 +39,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,8 +60,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.sportmeet.app.core.theme.SportBlue
+import com.sportmeet.app.core.theme.AthleticHeroBrush
 import com.sportmeet.app.core.theme.SportGold
+import com.sportmeet.app.core.theme.SportPrimary
 import com.sportmeet.app.core.theme.SportRed
 import com.sportmeet.app.domain.model.UserRole
 
@@ -94,211 +96,249 @@ fun RegisterScreen(
             .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(horizontal = 22.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Box(
+            modifier = Modifier
+                .size(68.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(AthleticHeroBrush),
+            contentAlignment = Alignment.Center
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
+            Text(text = "🏆", fontSize = 36.sp)
+        }
 
-            Text(
-                text = "Create Account",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Text(
+            text = "Create Account",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Black,
+            fontSize = 26.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "Join Sports Arena as a Player or Tournament Host",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Role Selector: Player vs Organizer
+        Text(
+            text = "SELECT YOUR ACCOUNT TYPE",
+            fontSize = 10.5.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 0.8.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.align(Alignment.Start)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            RoleSelectionPill(
+                title = "Player / Team",
+                emoji = "🏏 ⚽",
+                isSelected = selectedRole == UserRole.PLAYER,
+                accentColor = SportPrimary,
+                onClick = { selectedRole = UserRole.PLAYER },
+                modifier = Modifier.weight(1f)
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "Join SportMeet as a Player or Tournament Organizer",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+            RoleSelectionPill(
+                title = "Organizer",
+                emoji = "🏆 📢",
+                isSelected = selectedRole == UserRole.ORGANIZER,
+                accentColor = SportGold,
+                onClick = { selectedRole = UserRole.ORGANIZER },
+                modifier = Modifier.weight(1f)
             )
+        }
 
-            Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-            // Role Selector: Player vs Organizer
-            Text(
-                text = "SELECT YOUR ACCOUNT TYPE",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                RoleSelectionPill(
-                    title = "Player / Team",
-                    emoji = "🏏 ⚽",
-                    isSelected = selectedRole == UserRole.PLAYER,
-                    accentColor = SportBlue,
-                    onClick = { selectedRole = UserRole.PLAYER },
-                    modifier = Modifier.weight(1f)
-                )
-
-                RoleSelectionPill(
-                    title = "Organizer",
-                    emoji = "🏆 📢",
-                    isSelected = selectedRole == UserRole.ORGANIZER,
-                    accentColor = SportGold,
-                    onClick = { selectedRole = UserRole.ORGANIZER },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // Error Banner
-            AnimatedVisibility(visible = uiState.errorMessage != null) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 14.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = SportRed.copy(alpha = 0.12f))
-                ) {
-                    Text(
-                        text = uiState.errorMessage ?: "",
-                        color = SportRed,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
-            }
-
-            // Name
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    name = it
-                    viewModel.clearError()
-                },
-                label = { Text("Full Name") },
-                leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = null, tint = SportBlue) },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Email
-            OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    viewModel.clearError()
-                },
-                label = { Text("Email Address") },
-                leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = null, tint = SportBlue) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Phone
-            OutlinedTextField(
-                value = phone,
-                onValueChange = {
-                    phone = it
-                    viewModel.clearError()
-                },
-                label = { Text("Phone Number") },
-                leadingIcon = { Icon(Icons.Outlined.Phone, contentDescription = null, tint = SportBlue) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Password
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    viewModel.clearError()
-                },
-                label = { Text("Password (min 6 characters)") },
-                leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = SportBlue) },
-                trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
-                            contentDescription = null
-                        )
-                    }
-                },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Confirm Password
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = {
-                    confirmPassword = it
-                    viewModel.clearError()
-                },
-                label = { Text("Confirm Password") },
-                leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = SportBlue) },
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Register Button
-            Button(
-                onClick = {
-                    viewModel.register(name, email, phone, password, confirmPassword, selectedRole)
-                },
-                enabled = !uiState.isLoading,
+        // Error Banner
+        AnimatedVisibility(visible = uiState.errorMessage != null) {
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedRole == UserRole.ORGANIZER) SportGold else SportBlue
-                )
+                    .padding(bottom = 14.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = SportRed.copy(alpha = 0.12f))
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        strokeWidth = 2.5.dp,
-                        modifier = Modifier.size(22.dp)
-                    )
-                } else {
-                    Text(
-                        text = "Create ${if (selectedRole == UserRole.ORGANIZER) "Organizer" else "Player"} Account",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Text(
+                    text = uiState.errorMessage ?: "",
+                    color = SportRed,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(14.dp)
+                )
             }
         }
+
+        // Name
+        OutlinedTextField(
+            value = name,
+            onValueChange = {
+                name = it
+                viewModel.clearError()
+            },
+            label = { Text("Full Name") },
+            leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = null, tint = SportPrimary) },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = SportPrimary,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Email
+        OutlinedTextField(
+            value = email,
+            onValueChange = {
+                email = it
+                viewModel.clearError()
+            },
+            label = { Text("Email Address") },
+            leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = null, tint = SportPrimary) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = SportPrimary,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Phone
+        OutlinedTextField(
+            value = phone,
+            onValueChange = {
+                phone = it
+                viewModel.clearError()
+            },
+            label = { Text("Phone Number") },
+            leadingIcon = { Icon(Icons.Outlined.Phone, contentDescription = null, tint = SportPrimary) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = SportPrimary,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Password
+        OutlinedTextField(
+            value = password,
+            onValueChange = {
+                password = it
+                viewModel.clearError()
+            },
+            label = { Text("Password (min 6 characters)") },
+            leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = SportPrimary) },
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                        contentDescription = null
+                    )
+                }
+            },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = SportPrimary,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Confirm Password
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = {
+                confirmPassword = it
+                viewModel.clearError()
+            },
+            label = { Text("Confirm Password") },
+            leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = SportPrimary) },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = SportPrimary,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(26.dp))
+
+        // Register CTA Button
+        Button(
+            onClick = {
+                viewModel.register(name, email, phone, password, confirmPassword, selectedRole)
+            },
+            enabled = !uiState.isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (selectedRole == UserRole.ORGANIZER) SportGold else SportPrimary
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp, pressedElevation = 6.dp)
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(color = Color.White, strokeWidth = 2.5.dp, modifier = Modifier.size(22.dp))
+            } else {
+                Text(
+                    text = "Create ${if (selectedRole == UserRole.ORGANIZER) "Organizer" else "Player"} Account",
+                    fontSize = 15.5.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Login Link Footer
         Row(
@@ -313,12 +353,12 @@ fun RegisterScreen(
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "Sign in",
+                text = "Sign In",
                 fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = SportBlue,
+                fontWeight = FontWeight.ExtraBold,
+                color = SportPrimary,
                 modifier = Modifier.clickable { onNavigateToLogin() }
             )
         }
@@ -334,37 +374,36 @@ private fun RoleSelectionPill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) accentColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(14.dp)
-            )
-            .clickable { onClick() },
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) accentColor.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
-        )
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = if (isSelected) accentColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(
+            width = if (isSelected) 2.dp else 1.dp,
+            color = if (isSelected) accentColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+        ),
+        modifier = modifier.clickable { onClick() }
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text(text = title, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                Text(text = emoji, fontSize = 11.sp)
+                Text(text = emoji, fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = title,
+                    fontSize = 13.sp,
+                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                    color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface
+                )
             }
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = null,
+                    contentDescription = "Selected",
                     tint = accentColor,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

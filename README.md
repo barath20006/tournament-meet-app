@@ -1,6 +1,6 @@
-# SportMeet — Grassroots Sports Tournament Discovery & Posting Platform
+# Sports Arena — Grassroots Sports Tournament Discovery & Posting Platform
 
-**SportMeet** is a complete, production-grade Android and backend platform engineered to connect sports tournament organizers and grassroots athletes/teams.
+**Sports Arena** is a complete, production-grade Android and backend platform engineered to connect sports tournament organizers and grassroots athletes/teams.
 
 ---
 

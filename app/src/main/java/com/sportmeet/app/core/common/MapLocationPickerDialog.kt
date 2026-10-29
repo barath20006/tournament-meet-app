@@ -232,7 +232,7 @@ fun MapLocationPickerDialog(
                     val url = URL(String.format(Locale.US, "https://nominatim.openstreetmap.org/reverse?format=json&lat=%.6f&lon=%.6f&zoom=18&addressdetails=1", lat, lng))
                     val conn = url.openConnection() as HttpURLConnection
                     conn.requestMethod = "GET"
-                    conn.setRequestProperty("User-Agent", "SportMeet-Android-App/1.0")
+                    conn.setRequestProperty("User-Agent", "SportsArena-Android-App/1.0")
                     conn.connectTimeout = 3000
                     conn.readTimeout = 3000
                     conn.connect()
@@ -416,7 +416,7 @@ fun MapLocationPickerDialog(
                         val url = URL("https://nominatim.openstreetmap.org/search?format=json&q=$encoded&addressdetails=1&limit=5")
                         val conn = url.openConnection() as HttpURLConnection
                         conn.requestMethod = "GET"
-                        conn.setRequestProperty("User-Agent", "SportMeet-Android-App/1.0")
+                        conn.setRequestProperty("User-Agent", "SportsArena-Android-App/1.0")
                         conn.connectTimeout = 3000
                         conn.readTimeout = 3000
                         conn.connect()
@@ -505,7 +505,7 @@ fun MapLocationPickerDialog(
                             val url = URL("https://nominatim.openstreetmap.org/search?format=json&q=$encoded&addressdetails=1&limit=4")
                             val conn = url.openConnection() as HttpURLConnection
                             conn.requestMethod = "GET"
-                            conn.setRequestProperty("User-Agent", "SportMeet-Android-App/1.0")
+                            conn.setRequestProperty("User-Agent", "SportsArena-Android-App/1.0")
                             conn.connectTimeout = 2500
                             conn.readTimeout = 2500
                             conn.connect()

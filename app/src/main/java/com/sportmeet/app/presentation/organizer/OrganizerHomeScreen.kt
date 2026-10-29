@@ -98,7 +98,6 @@ import com.sportmeet.app.data.remote.dto.CreateTournamentRequest
 import com.sportmeet.app.data.remote.dto.RegistrationResponse
 import com.sportmeet.app.data.repository.RegistrationRepository
 import com.sportmeet.app.data.repository.TournamentRepository
-import com.sportmeet.app.domain.data.SampleData
 import com.sportmeet.app.domain.model.Sport
 import com.sportmeet.app.domain.model.Tournament
 import com.sportmeet.app.domain.model.TournamentStatus
@@ -852,29 +851,38 @@ private fun StatBox(
     color: Color,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Surface(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        shape = RoundedCornerShape(14.dp),
+        color = color.copy(alpha = 0.12f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.3f))
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(
+                    text = value,
+                    fontSize = 19.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = value,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onSurface
+                text = title,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = color
             )
         }
-        Text(
-            text = title,
-            fontSize = 11.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

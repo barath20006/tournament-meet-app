@@ -71,7 +71,7 @@ class CrashReportActivity : Activity() {
 
         // Title
         val titleText = TextView(this).apply {
-            text = "SportMeet Issue Detected"
+            text = "Sports Arena Issue Detected"
             setTextColor(Color.WHITE)
             textSize = 22f
             setTypeface(null, Typeface.BOLD)
@@ -183,9 +183,9 @@ class CrashReportActivity : Activity() {
         // Button 1: Copy Crash Details
         val copyButton = createStyledButton("📋 Copy Error Details", Color.parseColor("#2563EB"), Color.WHITE).apply {
             setOnClickListener {
-                val fullReport = "SportMeet Crash Report:\n$errorMessage\n\nStacktrace:\n$stackTrace"
+                val fullReport = "Sports Arena Crash Report:\n$errorMessage\n\nStacktrace:\n$stackTrace"
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("SportMeet Crash Log", fullReport)
+                val clip = ClipData.newPlainText("Sports Arena Crash Log", fullReport)
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(this@CrashReportActivity, "Error details copied to clipboard!", Toast.LENGTH_LONG).show()
             }

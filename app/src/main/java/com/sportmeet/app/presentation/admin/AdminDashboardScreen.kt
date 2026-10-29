@@ -123,7 +123,7 @@ fun AdminDashboardScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "SportMeet Governance & Approval",
+                        text = "Sports Arena Governance & Approval",
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

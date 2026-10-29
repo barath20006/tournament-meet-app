@@ -1,0 +1,12 @@
+{
+  "name": "sportmeet-documentation",
+  "version": "1.0.0",
+  "description": "Sports Arena Android App Academic Documentation Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "pdfkit": "^0.15.0"
+  }
+}

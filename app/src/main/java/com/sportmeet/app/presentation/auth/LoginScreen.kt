@@ -2,6 +2,7 @@ package com.sportmeet.app.presentation.auth
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,9 +64,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.sportmeet.app.core.theme.SportBlue
+import com.sportmeet.app.core.theme.AthleticHeroBrush
 import com.sportmeet.app.core.theme.SportGold
 import com.sportmeet.app.core.theme.SportGreen
+import com.sportmeet.app.core.theme.SportPrimary
 import com.sportmeet.app.core.theme.SportRed
 import com.sportmeet.app.data.remote.api.ApiClient
 import com.sportmeet.app.domain.model.UserRole
@@ -101,7 +103,7 @@ fun LoginScreen(
             .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(horizontal = 22.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -113,6 +115,7 @@ fun LoginScreen(
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
                 modifier = Modifier.clickable {
                     serverUrlInput = ApiClient.getBaseUrl()
                     showServerConfigDialog = true
@@ -125,7 +128,7 @@ fun LoginScreen(
                     Icon(
                         imageVector = Icons.Outlined.Dns,
                         contentDescription = "Server Settings",
-                        tint = SportBlue,
+                        tint = SportPrimary,
                         modifier = Modifier.size(13.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -139,193 +142,202 @@ fun LoginScreen(
             }
         }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // App Brand Emblem with Athletic Gradient
+        Box(
+            modifier = Modifier
+                .size(76.dp)
+                .clip(RoundedCornerShape(22.dp))
+                .background(AthleticHeroBrush),
+            contentAlignment = Alignment.Center
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
+            Text(text = "🏆", fontSize = 40.sp)
+        }
 
-            // App Brand Emblem
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(SportBlue),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "🏆", fontSize = 38.sp)
-            }
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Welcome to Sports Arena",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Black,
+            fontSize = 26.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
 
-            Text(
-                text = "Welcome to SportMeet",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+        Spacer(modifier = Modifier.height(4.dp))
 
-            Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Sign in to discover, register, and organize sports tournaments",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
 
-            Text(
-                text = "Sign in to discover, register, and organize sports tournaments",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
+        Spacer(modifier = Modifier.height(24.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Demo Autofill Shortcuts for fast evaluation
-            Text(
-                text = "⚡ Quick Demo Logins",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                AssistChip(
-                    onClick = {
-                        emailOrPhone = "player@sportmeet.com"
-                        password = "pass123"
-                    },
-                    label = { Text("Player", fontSize = 11.sp) },
-                    colors = AssistChipDefaults.assistChipColors(containerColor = SportBlue.copy(alpha = 0.12f), labelColor = SportBlue),
-                    modifier = Modifier.weight(1f)
-                )
-                AssistChip(
-                    onClick = {
-                        emailOrPhone = "organizer@sportmeet.com"
-                        password = "pass123"
-                    },
-                    label = { Text("Organizer", fontSize = 11.sp) },
-                    colors = AssistChipDefaults.assistChipColors(containerColor = SportGold.copy(alpha = 0.15f), labelColor = SportGold),
-                    modifier = Modifier.weight(1f)
-                )
-                AssistChip(
-                    onClick = {
-                        emailOrPhone = "admin@sportmeet.com"
-                        password = "admin123"
-                    },
-                    label = { Text("Admin", fontSize = 11.sp) },
-                    colors = AssistChipDefaults.assistChipColors(containerColor = SportGreen.copy(alpha = 0.15f), labelColor = SportGreen),
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Error Message
-            AnimatedVisibility(visible = uiState.errorMessage != null) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = SportRed.copy(alpha = 0.12f))
-                ) {
-                    Text(
-                        text = uiState.errorMessage ?: "",
-                        color = SportRed,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
-            }
-
-            // Email or Phone field
-            OutlinedTextField(
-                value = emailOrPhone,
-                onValueChange = {
-                    emailOrPhone = it
-                    viewModel.clearError()
+        // Demo Autofill Shortcuts for fast evaluation
+        Text(
+            text = "⚡ QUICK DEMO LOGINS",
+            fontSize = 10.5.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 0.7.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            AssistChip(
+                onClick = {
+                    emailOrPhone = "player@sportmeet.com"
+                    password = "pass123"
                 },
-                label = { Text("Email or Phone Number") },
-                leadingIcon = {
-                    Icon(imageVector = Icons.Outlined.Email, contentDescription = null, tint = SportBlue)
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = SportBlue,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                ),
-                modifier = Modifier.fillMaxWidth()
+                label = { Text("🏏 Player", fontSize = 11.5.sp, fontWeight = FontWeight.Bold) },
+                colors = AssistChipDefaults.assistChipColors(containerColor = SportPrimary.copy(alpha = 0.12f), labelColor = SportPrimary),
+                border = androidx.compose.foundation.BorderStroke(1.dp, SportPrimary.copy(alpha = 0.3f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f)
             )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Password field
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    viewModel.clearError()
+            AssistChip(
+                onClick = {
+                    emailOrPhone = "organizer@sportmeet.com"
+                    password = "pass123"
                 },
-                label = { Text("Password") },
-                leadingIcon = {
-                    Icon(imageVector = Icons.Outlined.Lock, contentDescription = null, tint = SportBlue)
-                },
-                trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
-                        )
-                    }
-                },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = SportBlue,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                ),
-                modifier = Modifier.fillMaxWidth()
+                label = { Text("🏆 Organizer", fontSize = 11.5.sp, fontWeight = FontWeight.Bold) },
+                colors = AssistChipDefaults.assistChipColors(containerColor = SportGold.copy(alpha = 0.14f), labelColor = SportGold),
+                border = androidx.compose.foundation.BorderStroke(1.dp, SportGold.copy(alpha = 0.35f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f)
             )
+            AssistChip(
+                onClick = {
+                    emailOrPhone = "admin@sportmeet.com"
+                    password = "admin123"
+                },
+                label = { Text("🛡️ Admin", fontSize = 11.5.sp, fontWeight = FontWeight.Bold) },
+                colors = AssistChipDefaults.assistChipColors(containerColor = SportGreen.copy(alpha = 0.14f), labelColor = SportGreen),
+                border = androidx.compose.foundation.BorderStroke(1.dp, SportGreen.copy(alpha = 0.3f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f)
+            )
+        }
 
-            Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(22.dp))
 
-            // Sign In Button
-            Button(
-                onClick = { viewModel.login(emailOrPhone, password) },
-                enabled = !uiState.isLoading,
+        // Error Message
+        AnimatedVisibility(visible = uiState.errorMessage != null) {
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SportBlue)
+                    .padding(bottom = 16.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = SportRed.copy(alpha = 0.12f))
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        strokeWidth = 2.5.dp,
-                        modifier = Modifier.size(22.dp)
-                    )
-                } else {
-                    Text(text = "Sign In", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Guest Explorer Mode
-            TextButton(onClick = onContinueAsGuest) {
                 Text(
-                    text = "Explore tournaments as Guest",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = uiState.errorMessage ?: "",
+                    color = SportRed,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(14.dp)
                 )
             }
         }
+
+        // Email or Phone field
+        OutlinedTextField(
+            value = emailOrPhone,
+            onValueChange = {
+                emailOrPhone = it
+                viewModel.clearError()
+            },
+            label = { Text("Email or Phone Number") },
+            leadingIcon = {
+                Icon(imageVector = Icons.Outlined.Email, contentDescription = null, tint = SportPrimary)
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = SportPrimary,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Password field
+        OutlinedTextField(
+            value = password,
+            onValueChange = {
+                password = it
+                viewModel.clearError()
+            },
+            label = { Text("Password") },
+            leadingIcon = {
+                Icon(imageVector = Icons.Outlined.Lock, contentDescription = null, tint = SportPrimary)
+            },
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                    )
+                }
+            },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = SportPrimary,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(26.dp))
+
+        // Sign In Button
+        Button(
+            onClick = { viewModel.login(emailOrPhone, password) },
+            enabled = !uiState.isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = SportPrimary),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp, pressedElevation = 6.dp)
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    strokeWidth = 2.5.dp,
+                    modifier = Modifier.size(22.dp)
+                )
+            } else {
+                Text(text = "Sign In", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Guest Explorer Mode
+        TextButton(onClick = onContinueAsGuest) {
+            Text(
+                text = "Explore tournaments as Guest ➔",
+                fontSize = 13.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Register Footer
         Row(
@@ -340,12 +352,12 @@ fun LoginScreen(
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = "Register here",
                 fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = SportBlue,
+                fontWeight = FontWeight.ExtraBold,
+                color = SportPrimary,
                 modifier = Modifier.clickable { onNavigateToRegister() }
             )
         }
@@ -397,7 +409,7 @@ fun LoginScreen(
                         Toast.makeText(context, "API base URL updated", Toast.LENGTH_SHORT).show()
                         showServerConfigDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = SportBlue)
+                    colors = ButtonDefaults.buttonColors(containerColor = SportPrimary)
                 ) {
                     Text("Save")
                 }

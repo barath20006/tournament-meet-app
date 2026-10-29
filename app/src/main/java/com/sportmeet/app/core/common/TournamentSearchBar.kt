@@ -1,13 +1,11 @@
 package com.sportmeet.app.core.common
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,22 +15,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.ElectricBolt
-import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Title
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,7 +31,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -51,14 +41,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sportmeet.app.core.theme.SportBlue
 import com.sportmeet.app.core.theme.SportGold
 import com.sportmeet.app.core.theme.SportGreen
+import com.sportmeet.app.core.theme.SportPrimary
 
 enum class SearchFilterScope(val displayName: String, val icon: ImageVector, val description: String) {
     ALL("All", Icons.Outlined.Search, "Name & Location"),
-    NAME("By Name", Icons.Outlined.Title, "Tournament Name"),
-    LOCATION("By Location", Icons.Outlined.LocationOn, "City or Venue")
+    NAME("Name", Icons.Outlined.Title, "Tournament Name"),
+    LOCATION("Location", Icons.Outlined.LocationOn, "City or Venue")
 }
 
 @Composable
@@ -77,14 +67,14 @@ fun TournamentSearchBar(
     val quickLocations = listOf("Erode", "Salem", "Coimbatore", "Tiruppur", "Namakkal")
 
     val currentPlaceholder = placeholderText ?: when (searchScope) {
-        SearchFilterScope.NAME -> "Filter by tournament title (e.g. Cricket Cup)..."
-        SearchFilterScope.LOCATION -> "Filter by city or venue (e.g. Erode, Nehru)..."
-        SearchFilterScope.ALL -> "Search tournament by name or location..."
+        SearchFilterScope.NAME -> "Search by tournament title (e.g. Cricket Cup)..."
+        SearchFilterScope.LOCATION -> "Search by city or ground (e.g. Erode, Pallipalayam)..."
+        SearchFilterScope.ALL -> "Search tournaments by name, ground, or city..."
     }
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -103,7 +93,7 @@ fun TournamentSearchBar(
                     Text(
                         text = currentPlaceholder,
                         fontSize = 13.5.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 },
                 leadingIcon = {
@@ -113,8 +103,8 @@ fun TournamentSearchBar(
                             SearchFilterScope.LOCATION -> Icons.Outlined.LocationOn
                             SearchFilterScope.ALL -> Icons.Outlined.Search
                         },
-                        contentDescription = "Search icon",
-                        tint = SportBlue,
+                        contentDescription = "Search",
+                        tint = SportPrimary,
                         modifier = Modifier.size(20.dp)
                     )
                 },
@@ -131,15 +121,15 @@ fun TournamentSearchBar(
                 },
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
-                    focusedBorderColor = SportBlue,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+                    focusedBorderColor = SportPrimary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                 ),
                 singleLine = true
             )
 
-            // Filter Scopes: By Name, By Location, All + Active Status Toggle
+            // Scopes Row: Active Only + Scope Pills
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -149,16 +139,16 @@ fun TournamentSearchBar(
             ) {
                 // Active Tournaments Only Toggle Chip
                 Surface(
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(12.dp),
                     color = if (onlyActive) SportGreen.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
                     border = androidx.compose.foundation.BorderStroke(
                         width = 1.dp,
-                        color = if (onlyActive) SportGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                        color = if (onlyActive) SportGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
                     ),
                     modifier = Modifier.clickable { onToggleOnlyActive(!onlyActive) }
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -169,9 +159,9 @@ fun TournamentSearchBar(
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = if (onlyActive) "Active Only" else "All Statuses",
+                            text = if (onlyActive) "Active Matches" else "All Statuses",
                             fontSize = 11.5.sp,
-                            fontWeight = if (onlyActive) FontWeight.Bold else FontWeight.Medium,
+                            fontWeight = if (onlyActive) FontWeight.ExtraBold else FontWeight.Medium,
                             color = if (onlyActive) SportGreen else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -181,36 +171,36 @@ fun TournamentSearchBar(
                 SearchFilterScope.values().forEach { scope ->
                     val isSelected = searchScope == scope
                     val chipBg by animateColorAsState(
-                        targetValue = if (isSelected) SportBlue.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        targetValue = if (isSelected) SportPrimary.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
                         label = "scopeBg"
                     )
                     val borderColor by animateColorAsState(
-                        targetValue = if (isSelected) SportBlue else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
+                        targetValue = if (isSelected) SportPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
                         label = "scopeBorder"
                     )
 
                     Surface(
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(12.dp),
                         color = chipBg,
                         border = androidx.compose.foundation.BorderStroke(width = 1.dp, color = borderColor),
                         modifier = Modifier.clickable { onSearchScopeChange(scope) }
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
                                 imageVector = scope.icon,
                                 contentDescription = null,
-                                tint = if (isSelected) SportBlue else MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = if (isSelected) SportPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(13.dp)
                             )
                             Text(
                                 text = scope.displayName,
                                 fontSize = 11.5.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) SportBlue else MaterialTheme.colorScheme.onSurface
+                                color = if (isSelected) SportPrimary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -226,17 +216,17 @@ fun TournamentSearchBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Locations:",
+                    text = "Cities:",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Bold
                 )
 
                 quickLocations.forEach { city ->
                     val isMatching = searchQuery.equals(city, ignoreCase = true)
                     Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = if (isMatching) SportGold.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (isMatching) SportGold.copy(alpha = 0.16f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
                         border = androidx.compose.foundation.BorderStroke(
                             width = 1.dp,
                             color = if (isMatching) SportGold else Color.Transparent
@@ -247,10 +237,10 @@ fun TournamentSearchBar(
                     ) {
                         Text(
                             text = "📍 $city",
-                            fontSize = 11.sp,
-                            fontWeight = if (isMatching) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 11.5.sp,
+                            fontWeight = if (isMatching) FontWeight.ExtraBold else FontWeight.Medium,
                             color = if (isMatching) SportGold else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
                         )
                     }
                 }
@@ -265,20 +255,20 @@ fun TournamentSearchBar(
                 ) {
                     Text(
                         text = if (matchingResultsCount > 0) {
-                            "⚡ $matchingResultsCount active ${if (matchingResultsCount == 1) "tournament" else "tournaments"} found"
+                            "⚡ $matchingResultsCount ${if (matchingResultsCount == 1) "tournament" else "tournaments"} found"
                         } else {
                             "No active tournaments match your search"
                         },
                         fontSize = 11.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (matchingResultsCount > 0) SportBlue else MaterialTheme.colorScheme.error
+                        fontWeight = FontWeight.Bold,
+                        color = if (matchingResultsCount > 0) SportPrimary else MaterialTheme.colorScheme.error
                     )
 
                     Text(
-                        text = "Reset",
+                        text = "Reset All",
                         fontSize = 11.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = SportBlue,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = SportPrimary,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable {

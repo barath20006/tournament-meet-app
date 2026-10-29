@@ -5,6 +5,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -95,7 +96,6 @@ import com.sportmeet.app.core.theme.SportGreen
 import com.sportmeet.app.core.theme.SportRed
 import com.sportmeet.app.data.repository.RegistrationRepository
 import com.sportmeet.app.data.repository.TournamentRepository
-import com.sportmeet.app.domain.data.SampleData
 import com.sportmeet.app.domain.model.Sport
 import com.sportmeet.app.domain.model.Tournament
 import com.sportmeet.app.domain.model.TournamentStatus
@@ -295,20 +295,30 @@ fun PlayerHomeScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
                             ) {
-                                Text(
-                                    text = "Find Your Next Tournament",
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onBackground
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Filter active grassroots tournaments by name, location, or sport.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = "Find Your Next Match",
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 22.sp,
+                                            color = MaterialTheme.colorScheme.onBackground
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "Grassroots tournaments with exact ground navigation",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontSize = 12.5.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
 
                                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -342,7 +352,8 @@ fun PlayerHomeScreen(
                                     Text(
                                         text = "Popular Sports",
                                         style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 16.sp,
                                         color = MaterialTheme.colorScheme.onBackground
                                     )
                                     if (selectedSportId != null) {
@@ -350,6 +361,7 @@ fun PlayerHomeScreen(
                                             Text(
                                                 text = "Clear filter",
                                                 fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
                                                 color = SportBlue
                                             )
                                         }
@@ -387,7 +399,8 @@ fun PlayerHomeScreen(
                                 Text(
                                     text = "Filter by Location",
                                     style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onBackground,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                                 )
@@ -403,20 +416,25 @@ fun PlayerHomeScreen(
                                         val isSelected = (selectedLocation == null && loc == "All") || selectedLocation == loc
                                         Box(
                                             modifier = Modifier
-                                                .clip(RoundedCornerShape(16.dp))
+                                                .clip(RoundedCornerShape(18.dp))
                                                 .background(
-                                                    if (isSelected) SportBlue.copy(alpha = 0.15f)
+                                                    if (isSelected) SportBlue.copy(alpha = 0.14f)
                                                     else MaterialTheme.colorScheme.surface
+                                                )
+                                                .border(
+                                                    width = 1.dp,
+                                                    color = if (isSelected) SportBlue else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                                                    shape = RoundedCornerShape(18.dp)
                                                 )
                                                 .clickable {
                                                     selectedLocation = if (loc == "All") null else loc
                                                 }
-                                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                                .padding(horizontal = 13.dp, vertical = 7.dp)
                                         ) {
                                             Text(
                                                 text = if (loc == "All") "📍 All Cities" else "📍 $loc",
                                                 fontSize = 12.sp,
-                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
                                                 color = if (isSelected) SportBlue else MaterialTheme.colorScheme.onSurface
                                             )
                                         }
@@ -1073,7 +1091,7 @@ fun PlayerHomeScreen(
                                         phone = captainPhone,
                                         email = "",
                                         numberOfPlayers = playersCount.toIntOrNull() ?: 11,
-                                        notes = "Registered via SportMeet Android"
+                                        notes = "Registered via Sports Arena Android"
                                     )
                                     Toast.makeText(context, "Registration submitted for $teamName!", Toast.LENGTH_LONG).show()
                                     showRegisterDialog = false
@@ -1115,7 +1133,7 @@ fun PlayerHomeScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "Help keep SportMeet safe. Admin reviews all reports.",
+                        text = "Help keep Sports Arena safe. Admin reviews all reports.",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
